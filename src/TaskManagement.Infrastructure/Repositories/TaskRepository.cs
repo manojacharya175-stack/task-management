@@ -14,7 +14,7 @@ public class TaskRepository : ITaskRepository
         _context = context;
     }
 
-    public async Task<TaskItem?> GetByIdAsync(Guid id)
+    public async Task<TaskItem?> GetByIdAsync(int id)
     {
         return await _context.Tasks.FindAsync(id);
     }
@@ -36,6 +36,16 @@ public class TaskRepository : ITaskRepository
     public async Task UpdateAsync(TaskItem task)
     {
         _context.Tasks.Update(task);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var item = await _context.Tasks.FindAsync(id);
+        if(item != null)
+        {
+            _context.Tasks.Remove(item);
+        }
         await _context.SaveChangesAsync();
     }
 }

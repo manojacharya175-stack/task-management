@@ -17,28 +17,59 @@ public class TasksController : ControllerBase
         _taskService = taskService;
     }
 
-    // POST: api/tasks
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateTaskRequest request)
-    {
-        // Temporary userId (will come from JWT later)
-        var userId = GetUserId();
-
-        var result = await _taskService.CreateAsync(userId, request);
-        return Ok(result);
-    }
-
-    // GET: api/tasks
     [Authorize(Policy = "AdminOnly")]
     [HttpGet]
-    public async Task<IActionResult> GetMyTasks()
+    public async Task<IActionResult> GetAllTasks()
     {
         // Temporary userId
         var userId = Guid.NewGuid();
 
         var tasks = await _taskService.GetByUserAsync(userId);
+
+        if (tasks == null || !tasks.Any())
+            return NotFound(new { message = "Tasks Not Found" });
+
         return Ok(tasks);
-    }   
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetAllTasks(int id)
+    {
+        var tasks = await _taskService.GetByIdAsyc(id);
+
+        if (tasks == null)
+            return NotFound(new { message = "Task Not Found" });
+
+        return Ok(tasks);
+    }
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateTaskRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userId = GetUserId();
+
+        var result = await _taskService.CreateAsync(userId, request);
+
+        return Ok(result);
+    }
+
+    // PUT: api/tasks
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTaskRequest request)
+    {
+        var result = await _taskService.UpdateAsync(request);
+        return Ok(result);
+    }
+
+    // Delete: api/tasks
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        await _taskService.DeleteAsync(id);
+        return Ok();
+    }
 
     private Guid GetUserId()
     {

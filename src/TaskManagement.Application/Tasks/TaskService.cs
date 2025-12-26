@@ -20,12 +20,28 @@ public class TaskService : ITaskService
         var task = new TaskItem(
             request.Title,
             userId,
-            request.Description
+            request.Status
         );
 
         await _taskRepository.AddAsync(task);
 
         return MapToDto(task);
+    }
+    public async Task<TaskDto> UpdateAsync(UpdateTaskRequest request)
+    {
+        var task = new TaskItem(
+            request.Title,
+            request.UserId
+        );
+
+        await _taskRepository.UpdateAsync(task);
+
+        return MapToDto(task);
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        await _taskRepository.DeleteAsync(id);
     }
 
     public async Task<IEnumerable<TaskDto>> GetByUserAsync(Guid userId)
@@ -33,6 +49,17 @@ public class TaskService : ITaskService
         var tasks = await _taskRepository.GetByUserIdAsync(userId);
 
         return tasks.Select(MapToDto);
+    }
+
+    public async Task<TaskDto> GetByIdAsyc(int id)
+    {
+        var tasks = await _taskRepository.GetByIdAsync(id);
+
+        if( tasks != null)
+        {
+            return MapToDto(tasks);
+        }
+        return null;
     }
 
     private static TaskDto MapToDto(TaskItem task)
