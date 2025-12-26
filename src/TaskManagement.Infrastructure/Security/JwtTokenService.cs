@@ -31,7 +31,7 @@ public class JwtTokenService : IAuthService
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, request.Email),
             new Claim(ClaimTypes.Role, user.Role)
         };

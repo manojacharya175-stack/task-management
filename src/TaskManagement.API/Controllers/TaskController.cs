@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TaskManagement.Application.DTOs;
 using TaskManagement.Application.Interfaces;
 
@@ -22,7 +23,7 @@ public class TasksController : ControllerBase
     public async Task<IActionResult> GetAllTasks()
     {
         // Temporary userId
-        var userId = Guid.NewGuid();
+        var userId = GetUserId();
 
         var tasks = await _taskService.GetByUserAsync(userId);
 
@@ -42,6 +43,7 @@ public class TasksController : ControllerBase
 
         return Ok(tasks);
     }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTaskRequest request)
     {
@@ -55,7 +57,6 @@ public class TasksController : ControllerBase
         return Ok(result);
     }
 
-    // PUT: api/tasks
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTaskRequest request)
     {
@@ -63,7 +64,6 @@ public class TasksController : ControllerBase
         return Ok(result);
     }
 
-    // Delete: api/tasks
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -73,12 +73,9 @@ public class TasksController : ControllerBase
 
     private Guid GetUserId()
     {
-        var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
-        if (userIdClaim == null)
-            throw new UnauthorizedAccessException("UserId claim missing");
-
-        return Guid.Parse(userIdClaim.Value);
+        return userIdClaim == null ? throw new UnauthorizedAccessException("UserId claim missing") : Guid.Parse(userIdClaim.Value);
     }
 
 }
